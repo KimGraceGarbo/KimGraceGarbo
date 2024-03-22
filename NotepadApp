@@ -1,0 +1,106 @@
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+void main() {
+  runApp(NotepadApp());
+}
+
+class NotepadApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Notepad',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: NotepadHomePage(),
+    );
+  }
+}
+
+class NotepadHomePage extends StatefulWidget {
+  @override
+  _NotepadHomePageState createState() => _NotepadHomePageState();
+}
+
+class _NotepadHomePageState extends State<NotepadHomePage> {
+  late TextEditingController _noteController;
+  List<String> _notes = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _noteController = TextEditingController();
+    _loadNotes();
+  }
+
+  Future<void> _loadNotes() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _notes = prefs.getStringList('notes') ?? [];
+    });
+  }
+
+  Future<void> _saveNotes() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('notes', _notes);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Notepad'),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              itemCount: _notes.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text(_notes[index]),
+                  trailing: IconButton(
+                    icon: Icon(Icons.delete),
+                    onPressed: () {
+                      setState(() {
+                        _notes.removeAt(index);
+                      });
+                      _saveNotes();
+                    },
+                  ),
+                );
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              controller: _noteController,
+              decoration: InputDecoration(
+                labelText: 'Enter your note',
+                suffixIcon: IconButton(
+                  icon: Icon(Icons.add),
+                  onPressed: () {
+                    setState(() {
+                      _notes.add(_noteController.text);
+                      _saveNotes();
+                      _noteController.clear();
+                    });
+                  },
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _noteController.dispose();
+    super.dispose();
+  }
+}
