@@ -1,0 +1,174 @@
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({ Key? key }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({ Key? key }) : super(key: key);
+
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+
+  TextEditingController _makeController = TextEditingController();
+  TextEditingController _modelController = TextEditingController();
+  TextEditingController _yearController = TextEditingController();
+  TextEditingController _priceController = TextEditingController();
+
+  List<Map<String, dynamic>> _carsList = [];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: Column(
+            children: [
+              createTextField(
+                controller: _makeController, labelText: "Make"),
+              vSpacer(10.0),
+
+              createTextField(
+                controller: _modelController, labelText: "Model"),
+              vSpacer(10.0),
+
+              createTextField(
+                controller: _yearController,labelText: "Year"),
+              vSpacer(10.0),
+
+              createTextField(
+                controller: _priceController,labelText: "Price"),
+              vSpacer(10.0),
+
+               Row( mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      saveRecord(
+                        _makeController.text,
+                        _modelController.text,
+                        _yearController.text,
+                        _priceController.text,
+                      );
+                    },
+                    child: Text('Sumbit'),
+                  ),
+                  SizedBox(width: 10.0),
+                  ElevatedButton(
+                    onPressed: () {
+                      clearFields();
+                    },
+                    child: Text('Clear'),
+                  ),
+                ],
+              ),
+              createListView(),
+          ],
+          ),
+        ) 
+      )
+    );
+  }
+
+
+  Widget createTextField(
+      {required TextEditingController controller, required String labelText}) {
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: labelText,
+        hintText: "Enter",
+        border: OutlineInputBorder (borderSide: BorderSide(width: 2, color: Colors.black),
+        borderRadius: BorderRadius.circular(8.0)),
+      ),
+    );
+  }
+
+  Widget vSpacer(double height) {
+    return SizedBox(height: height);
+  }
+  
+
+  void saveRecord(String make, String model, String year, String price) {
+    Map<String, dynamic> carMap = {
+    
+      "make": make ,
+      "model": model,
+      "year": year,
+      "price": price,
+    };
+
+    setState(() {
+      _carsList.add(carMap);
+    });
+  
+    clearFields();
+  }
+
+  void clearFields() {
+    _makeController.clear();
+    _modelController.clear();
+    _yearController.clear();
+    _priceController.clear();
+  
+
+  }
+
+  Widget createListView() {
+    return Expanded(
+      child: ListView.builder(
+        itemCount: _carsList.length,
+        itemBuilder: (context, index) {
+          return Card(
+            child: ListTile(
+              title: Text(_carsList[index]['make']),
+              subtitle: Text(_carsList[index]['model']),          
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  void displaySelected (int index) { 
+    String make = _carsList[index]['make'];
+    String model = _carsList[index]['model'];
+    String year = _carsList[index]['year'];
+    String price = _carsList[index]['price'];
+
+   showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Selected Item"),
+          content:
+              Text("Make: $make\nModel: $model\Year: $year\nPrice: $price"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text("Close Detail"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
